@@ -8,7 +8,6 @@ import com.modsen.software.rides.exception.RideAlreadyExistsException;
 import com.modsen.software.rides.exception.RideNotExistsException;
 import com.modsen.software.rides.repository.RideRepository;
 import com.modsen.software.rides.service.RideService;
-import com.modsen.software.rides.utils.communication.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageRequest;
@@ -26,8 +25,6 @@ public class RideServiceImpl implements RideService {
     private final RideRepository rideRepository;
 
     private final ConversionService conversionService;
-
-    private final CommunicationService communicationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -98,6 +95,6 @@ public class RideServiceImpl implements RideService {
         if (rideRepository.changeStatus(id, newStatus.toString()) == 0)
             throw new RideNotExistsException(String.format("Ride with id = %d not exists", id));
 
-        return conversionService.convert(rideRepository.findById(id), RideResponse.class);
+        return conversionService.convert(rideRepository.findById(id).get(), RideResponse.class);
     }
 }
