@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -38,10 +38,10 @@ public class Ride {
     private RideStatus rideStatus;
 
     @Column(name = "r_creation_date", nullable = false)
-    private Date creationDate;
+    private OffsetDateTime creationDate;
 
     @Column(name= "r_completion_date")
-    private Date completionDate;
+    private OffsetDateTime completionDate;
 
     @Column(name = "r_cost")
     private BigDecimal price;

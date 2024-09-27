@@ -3,8 +3,10 @@ package com.modsen.software.rides.dto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import com.modsen.software.rides.dto.ValidationMarker.OnCreate;
+
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +16,8 @@ public class RideRequest {
     @Min(1)
     private Long id;
 
-    @Min(1)
+    @Min(value = 1)
+    @Null(groups = OnCreate.class)
     private Long driverId;
 
     @Min(1)
@@ -30,10 +33,12 @@ public class RideRequest {
     private String rideStatus;
 
     @Past
-    private Date creationDate;
+    private OffsetDateTime creationDate;
 
-    private Date completionDate;
+    @Null(groups = OnCreate.class)
+    private OffsetDateTime completionDate;
 
+    @Null(groups = OnCreate.class)
     private BigDecimal price;
 }
 

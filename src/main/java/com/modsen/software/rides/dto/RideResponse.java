@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.Date;
 
 @Data
@@ -28,9 +29,9 @@ public class RideResponse {
 
     private String rideStatus;
 
-    private Date creationDate;
+    private OffsetDateTime creationDate;
 
-    private Date completionDate;
+    private OffsetDateTime completionDate;
 
     private BigDecimal price;
 }

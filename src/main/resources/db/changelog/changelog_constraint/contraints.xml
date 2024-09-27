@@ -7,7 +7,6 @@
 
     <changeSet id="constraints_setup" author="Aleksej">
         <addPrimaryKey columnNames="r_id" tableName="rides" constraintName="pk_rides"/>
-        <addNotNullConstraint columnName="r_driver_id" tableName="rides"/>
         <addNotNullConstraint columnName="r_passenger_id" tableName="rides"/>
         <addNotNullConstraint columnName="r_departure_address" tableName="rides"/>
         <addNotNullConstraint columnName="r_destination_address" tableName="rides"/>
