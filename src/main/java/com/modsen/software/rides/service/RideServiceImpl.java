@@ -8,14 +8,19 @@ import com.modsen.software.rides.exception.RideAlreadyExistsException;
 import com.modsen.software.rides.exception.RideDowngradingStatus;
 import com.modsen.software.rides.exception.RideNotExistsException;
 import com.modsen.software.rides.exception.RideStatusChangeNotPermitted;
+import com.modsen.software.rides.kafka.event.BaseRideEvent;
+import com.modsen.software.rides.kafka.event.SelectionDriverEvent;
+import com.modsen.software.rides.kafka.event.StatusChangedEvent;
 import com.modsen.software.rides.repository.RideRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.channels.SelectionKey;
 import java.util.List;
 
 @Service
@@ -25,6 +30,8 @@ public class RideServiceImpl {
     private final RideRepository rideRepository;
 
     private final PassengerServiceClient passengerServiceClient;
+
+    private final KafkaTemplate<String, BaseRideEvent> kafkaTemplate;
 
     @Transactional(readOnly = true)
     public Ride getById(Long id) {
@@ -55,14 +62,18 @@ public class RideServiceImpl {
 
         if (request.getId() != null && rideRepository.existsById(request.getId())) {
             throw new RideAlreadyExistsException(String.format("Ride with id = %d already exists", request.getId()));
-        } else {
-            passengerServiceClient.getById(request.getPassengerId()); // check for exceptions
-            request.setPrice(calculateEstimatedPriceForPassenger());
-
-            rideRepository.save(request);
         }
 
-        return request;
+        passengerServiceClient.getById(request.getPassengerId());
+        request.setPrice(calculateEstimatedPriceForPassenger());
+
+        var savedRide = rideRepository.save(request);
+
+        kafkaTemplate.send("ride_events", new SelectionDriverEvent(savedRide.getId()));
+        kafkaTemplate.send("ride_events", new StatusChangedEvent(savedRide.getId(), request.getRideStatus().toString(),
+                RideStatus.CREATED.toString(), UserType.PASSENGER.toString()));
+
+        return savedRide;
     }
 
     @Transactional
@@ -83,13 +94,16 @@ public class RideServiceImpl {
         var ride = rideRepository.findById(id).orElseThrow(() ->
                 new RideNotExistsException(String.format("Ride with id = %d not exists", id)));
 
-        if (ride.getRideStatus().compareTo(newStatus) < 0)
+        if (ride.getRideStatus().compareTo(newStatus) > 0)
             throw new RideDowngradingStatus(String.format("Can't downgrade status for the ride with id = %d", id));
 
-        if (userId.compareTo(ride.getPassengerId()) == 0 || userId.compareTo(ride.getDriverId()) == 0)
+        if (!(userId.compareTo(ride.getPassengerId()) == 0 || userId.compareTo(ride.getDriverId()) == 0))
             throw new RideStatusChangeNotPermitted("User that are changing status are not in ride");
 
         ride.setRideStatus(newStatus);
+
+        kafkaTemplate.send("ride_events", new StatusChangedEvent(id, ride.getRideStatus().toString(),
+                newStatus.toString(), userType.toString()));
 
         return rideRepository.save(ride);
     }
@@ -111,6 +125,6 @@ public class RideServiceImpl {
     }
 
     private UserType getSessionUserType() {
-        return UserType.PASSENGER;
+        return UserType.DRIVER;
     }
 }

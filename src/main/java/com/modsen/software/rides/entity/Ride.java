@@ -21,7 +21,7 @@ public class Ride {
     @Column(name = "r_id")
     private Long id;
 
-    @Column(name = "r_driver_id", nullable = false)
+    @Column(name = "r_driver_id")
     private Long driverId;
 
     @Column(name = "r_passenger_id", nullable = false)
