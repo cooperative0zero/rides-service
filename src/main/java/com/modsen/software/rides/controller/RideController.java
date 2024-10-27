@@ -100,11 +100,11 @@ public class RideController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public RideResponse changeStatusByDriver(
+    public RideResponse changeStatus(
             @PathVariable @Min(1) Long id,
-            @RequestParam Long driverId,
+            @RequestParam Long userId,
             @RequestParam String status) {
         return conversionService.convert(
-                rideService.changeStatus(id, driverId, RideStatus.valueOf(status.toUpperCase())), RideResponse.class);
+                rideService.changeStatus(id, userId, RideStatus.valueOf(status.toUpperCase())), RideResponse.class);
     }
 }
