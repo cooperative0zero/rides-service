@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "rides")
-@Builder
+@Builder(toBuilder = true)
 public class Ride {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
