@@ -1,6 +1,7 @@
 package com.modsen.software.rides.repository;
 
 import com.modsen.software.rides.entity.Ride;
+import com.modsen.software.rides.entity.enumeration.RideStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,5 +19,5 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
 
     @Modifying
     @Query("UPDATE Ride r SET r.rideStatus = :status WHERE r.id = :id")
-    int changeStatus(@Param("id") Long id, @Param("status") String status);
+    int changeStatus(@Param("id") Long id, @Param("status") RideStatus status);
 }

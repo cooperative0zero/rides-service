@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.modsen.software.rides.exception.BaseCustomException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,10 +17,9 @@ import java.util.stream.Collectors;
 public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(BaseCustomException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @JsonView(BaseCustomException.class)
-    public BaseCustomException handleCustomException(BaseCustomException e) {
-        return e;
+    public ResponseEntity<BaseCustomException> handleCustomException(BaseCustomException e) {
+        return new ResponseEntity<>(e, HttpStatus.valueOf(e.statusCode));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

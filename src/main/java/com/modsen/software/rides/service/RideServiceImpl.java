@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.nio.channels.SelectionKey;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -65,6 +66,7 @@ public class RideServiceImpl {
         }
 
         passengerServiceClient.getById(request.getPassengerId());
+        request.setCreationDate(OffsetDateTime.now());
         request.setPrice(calculateEstimatedPriceForPassenger());
 
         var savedRide = rideRepository.save(request);
