@@ -1,11 +1,9 @@
 package com.modsen.software.rides.controller;
 
-import com.modsen.software.rides.dto.PaginatedResponse;
-import com.modsen.software.rides.dto.RideRequest;
-import com.modsen.software.rides.dto.RideResponse;
-import com.modsen.software.rides.dto.ValidationMarker;
+import com.modsen.software.rides.dto.*;
 import com.modsen.software.rides.entity.Ride;
 import com.modsen.software.rides.entity.enumeration.RideStatus;
+import com.modsen.software.rides.service.RideReportService;
 import com.modsen.software.rides.service.RideServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +27,8 @@ public class RideController {
     private final RideServiceImpl rideService;
 
     private final ConversionService conversionService;
+
+    private final RideReportService rideReportService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -137,5 +137,18 @@ public class RideController {
             @RequestParam String status) {
         return conversionService.convert(
                 rideService.changeStatus(id, userId, RideStatus.valueOf(status.toUpperCase())), RideResponse.class);
+    }
+
+    @PostMapping("/report/excel")
+    public void downloadExcelReport(RideReportRequest rideReportRequest) {
+        rideReportService.generateRideReport(
+                rideReportRequest.driverId(),
+                rideReportRequest.passengerId(),
+                rideReportRequest.fromDate(),
+                rideReportRequest.toDate(),
+                rideReportRequest.statusTypes(),
+                rideReportRequest.email(),
+                rideReportRequest.maxRowsCount()
+        );
     }
 }
