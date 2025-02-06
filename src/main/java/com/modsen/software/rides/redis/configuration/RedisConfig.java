@@ -7,6 +7,8 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
+import org.springframework.data.redis.connection.RedisPassword;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,22 +24,22 @@ public class RedisConfig {
     private final RedisProperties redisProperties;
     private final ClusterConfigurationProperties clusterConfigurationProperties;
 
-//    @Bean
-//    protected LettuceConnectionFactory redisConnectionFactory() {
-//        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-//                .readFrom(ReadFrom.REPLICA_PREFERRED)
-//                .build();
-//
-//        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration()
-//                .master(redisProperties.getSentinel().getMaster());
-//
-//        redisProperties.getSentinel().getNodes().forEach(s -> sentinelConfig.sentinel(s.split(":")[0], Integer.valueOf(s.split(":")[1])));
-//        sentinelConfig.setPassword(RedisPassword.of(redisProperties.getPassword()));
-//        return new LettuceConnectionFactory(sentinelConfig, clientConfig);
-//    }
+    @Bean
+    protected LettuceConnectionFactory redisConnectionFactorySentinel() {
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .readFrom(ReadFrom.REPLICA_PREFERRED)
+                .build();
+
+        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration()
+                .master(redisProperties.getSentinel().getMaster());
+
+        redisProperties.getSentinel().getNodes().forEach(s -> sentinelConfig.sentinel(s.split(":")[0], Integer.valueOf(s.split(":")[1])));
+        sentinelConfig.setPassword(RedisPassword.of(redisProperties.getPassword()));
+        return new LettuceConnectionFactory(sentinelConfig, clientConfig);
+    }
 
     @Bean
-    public LettuceConnectionFactory redisConnectionFactory(RedisClusterConfiguration redisConfiguration) {
+    protected LettuceConnectionFactory redisConnectionFactoryCluster(RedisClusterConfiguration redisConfiguration) {
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
                 .readFrom(ReadFrom.REPLICA_PREFERRED)
                 .build();
@@ -58,7 +60,7 @@ public class RedisConfig {
         final RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(JacksonConfig.objectMapper()));
-        redisTemplate.setConnectionFactory(redisConnectionFactory(redisConfiguration()));
+        redisTemplate.setConnectionFactory(redisConnectionFactoryCluster(redisConfiguration()));
         return redisTemplate;
     }
 }
