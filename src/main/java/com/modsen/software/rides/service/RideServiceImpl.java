@@ -11,8 +11,13 @@ import com.modsen.software.rides.exception.RideStatusChangeNotPermitted;
 import com.modsen.software.rides.kafka.event.BaseRideEvent;
 import com.modsen.software.rides.kafka.event.SelectionDriverEvent;
 import com.modsen.software.rides.kafka.event.StatusChangedEvent;
+import com.modsen.software.rides.redis.aspect.CacheAction;
+import com.modsen.software.rides.redis.aspect.CacheableRide;
+import com.modsen.software.rides.redis.service.RedisService;
 import com.modsen.software.rides.repository.RideRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.nio.channels.SelectionKey;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -34,10 +38,24 @@ public class RideServiceImpl {
 
     private final KafkaTemplate<String, BaseRideEvent> kafkaTemplate;
 
+    private final RedisService redisService;
+
     @Transactional(readOnly = true)
+//    @CacheableRide(action = CacheAction.GET)
+    @Cacheable(value = "rides", key = "#id")
     public Ride getById(Long id) {
-        return rideRepository.findById(id)
+//        Ride value = (Ride) redisService.getValue(id.toString());
+//
+//        if (value == null) {
+//            value = rideRepository.findById(id)
+//                    .orElseThrow(()-> new RideNotExistsException(String.format("Ride with id = %d not exists", id)));
+//            redisService.putValue(id.toString(), value);
+//        }
+
+        var value = rideRepository.findById(id)
                 .orElseThrow(()-> new RideNotExistsException(String.format("Ride with id = %d not exists", id)));
+
+        return value;
     }
 
     @Transactional(readOnly = true)
@@ -59,6 +77,8 @@ public class RideServiceImpl {
     }
 
     @Transactional
+    @CachePut(value = "rides", key = "#request.id")
+//    @CacheableRide(action = CacheAction.PUT)
     public Ride save(Ride request) {
 
         if (request.getId() != null && rideRepository.existsById(request.getId())) {
@@ -71,6 +91,8 @@ public class RideServiceImpl {
 
         var savedRide = rideRepository.save(request);
 
+//        redisService.putValue(savedRide.getId().toString(), savedRide);
+
         kafkaTemplate.send("ride_events", new SelectionDriverEvent(savedRide.getId()));
         kafkaTemplate.send("ride_events", new StatusChangedEvent(savedRide.getId(), request.getRideStatus().toString(),
                 RideStatus.CREATED.toString(), UserType.PASSENGER.toString()));
@@ -79,14 +101,20 @@ public class RideServiceImpl {
     }
 
     @Transactional
+    @CachePut(value = "rides", key = "#request.id")
+//    @CacheableRide(action = CacheAction.PUT)
     public Ride update(Ride request) {
         if (!rideRepository.existsById(request.getId()))
             throw new RideNotExistsException(String.format("Ride with id = %d not exists", request.getId()));
+
+//        redisService.putValue(request.getId().toString(), request);
 
         return rideRepository.save(request);
     }
 
     @Transactional
+    @CachePut(value = "rides", key = "#id")
+//    @CacheableRide(action = CacheAction.PUT)
     public Ride changeStatus(Long id, Long userId, RideStatus newStatus) {
         var userType = getSessionUserType();
 
@@ -103,6 +131,8 @@ public class RideServiceImpl {
             throw new RideStatusChangeNotPermitted("User that are changing status are not in ride");
 
         ride.setRideStatus(newStatus);
+
+//        redisService.putValue(ride.getId().toString(), ride);
 
         kafkaTemplate.send("ride_events", new StatusChangedEvent(id, ride.getRideStatus().toString(),
                 newStatus.toString(), userType.toString()));
