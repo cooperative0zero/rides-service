@@ -4,6 +4,7 @@ import com.modsen.software.rides.entity.enumeration.RideStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
@@ -15,7 +16,7 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "rides")
 @Builder(toBuilder = true)
-public class Ride {
+public class Ride implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "r_id")

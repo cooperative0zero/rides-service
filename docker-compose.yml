@@ -29,6 +29,124 @@ services:
     volumes:
       - /var/lib/docker/volumes/rides-db:/var/lib/postgresql/data
 
+  redis-master:
+    container_name: redis-master
+    image: 'bitnami/redis:latest'
+    networks:
+      - microservices-network
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_PASSWORD=redispassword
+    ports:
+      - "6379:6379"
+
+  redis-slave:
+    container_name: slave-redis
+    image: 'bitnami/redis:latest'
+    networks:
+      - microservices-network
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PASSWORD=redispassword
+      - REDIS_PASSWORD=redispassword
+    ports:
+      - "7000:6379"
+    depends_on:
+      - redis-master
+
+  redis-sentinel-1:
+    image: 'bitnami/redis-sentinel:latest'
+    container_name: sentinel-1
+    networks:
+      - microservices-network
+    environment:
+      - REDIS_MASTER_SET=rides_redis_master
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PASSWORD=redispassword
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=10000
+    depends_on:
+      - redis-master
+      - redis-slave
+    ports:
+      - "26379:26379"
+
+  redis-sentinel-2:
+    image: 'bitnami/redis-sentinel:latest'
+    container_name: sentinel-2
+    networks:
+      - microservices-network
+    environment:
+      - REDIS_MASTER_SET=rides_redis_master
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PASSWORD=redispassword
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=10000
+    depends_on:
+      - redis-master
+      - redis-slave
+    ports:
+      - "26380:26379"
+
+  redis-sentinel-3:
+    image: 'bitnami/redis-sentinel:latest'
+    container_name: sentinel-3
+    networks:
+      - microservices-network
+    environment:
+      - REDIS_MASTER_SET=rides_redis_master
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PASSWORD=redispassword
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=10000
+    depends_on:
+      - redis-master
+      - redis-slave
+    ports:
+      - "26381:26379"
+
+  redis-insight:
+    image: 'redislabs/redisinsight:latest'
+    container_name: redis_insight
+    networks:
+      - microservices-network
+    depends_on:
+      - redis-master
+      - redis-slave
+    ports:
+      - "5540:5540"
+
+  redis-cluster-node-1:
+    container_name: node-1
+    image: 'redis:latest'
+    networks:
+      - microservices-network
+    command: redis-server /redis_config/node1.conf
+    volumes:
+      - /home/aleksej/Документы/cluster_nodes/4025:/redis_config
+    ports:
+      - "4025:6379"
+
+  redis-cluster-node-2:
+    container_name: node-2
+    image: 'redis:latest'
+    networks:
+      - microservices-network
+    command: redis-server /redis_config/redis.conf
+    volumes:
+      - /home/aleksej/Документы/cluster_nodes/4026:/redis_config
+    ports:
+      - "4026:6379"
+
+  redis-cluster-node-3:
+    container_name: node-3
+    image: 'redis:latest'
+    networks:
+      - microservices-network
+    command: redis-server /redis_config/redis.conf
+    volumes:
+      - /home/aleksej/Документы/cluster_nodes/4027:/redis_config
+    ports:
+      - "4027:6379"
+
 networks:
   microservices-network:
     external: true
