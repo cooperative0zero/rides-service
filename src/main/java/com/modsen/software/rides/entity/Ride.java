@@ -1,5 +1,6 @@
 package com.modsen.software.rides.entity;
 
+import com.modsen.software.rides.entity.enumeration.Currency;
 import com.modsen.software.rides.entity.enumeration.RideStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -46,4 +47,8 @@ public class Ride implements Serializable {
 
     @Column(name = "r_cost")
     private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "r_currency")
+    private Currency currency;
 }

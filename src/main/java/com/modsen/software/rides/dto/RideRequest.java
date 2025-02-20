@@ -21,7 +21,6 @@ public class RideRequest {
     private Long id;
 
     @Min(value = 1)
-    @Null(groups = OnCreate.class)
     @Schema(description = "Driver's identifier")
     private Long driverId;
 
@@ -52,5 +51,9 @@ public class RideRequest {
     @Null(groups = OnCreate.class)
     @Schema(description = "Calculated price of the ride")
     private BigDecimal price;
+
+    @NotBlank
+    @Schema(description = "Price currency")
+    private String currency;
 }
 

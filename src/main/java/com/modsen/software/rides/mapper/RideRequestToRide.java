@@ -2,6 +2,7 @@ package com.modsen.software.rides.mapper;
 
 import com.modsen.software.rides.dto.RideRequest;
 import com.modsen.software.rides.entity.Ride;
+import com.modsen.software.rides.entity.enumeration.Currency;
 import com.modsen.software.rides.entity.enumeration.RideStatus;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ public class RideRequestToRide implements Converter<RideRequest, Ride> {
                 .destinationAddress(source.getDestinationAddress())
                 .rideStatus(RideStatus.valueOf(source.getRideStatus().toUpperCase()))
                 .driverId(source.getDriverId())
+                .currency(Currency.valueOf(source.getCurrency().toUpperCase()))
                 .passengerId(source.getPassengerId())
                 .build();
     }

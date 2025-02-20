@@ -45,4 +45,7 @@ public class RideResponse {
 
     @Schema(description = "Calculated price of the ride")
     private BigDecimal price;
+
+    @Schema(description = "Price currency")
+    private String currency;
 }
