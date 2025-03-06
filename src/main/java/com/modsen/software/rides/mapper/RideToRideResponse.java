@@ -19,6 +19,7 @@ public class RideToRideResponse implements Converter<Ride, RideResponse> {
                 .rideStatus(source.getRideStatus().toString())
                 .destinationAddress(source.getDestinationAddress())
                 .driverId(source.getDriverId())
+                .currency(source.getCurrency().toString())
                 .passengerId(source.getPassengerId())
                 .build();
     }

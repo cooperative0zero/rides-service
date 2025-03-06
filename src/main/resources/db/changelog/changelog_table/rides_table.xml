@@ -19,4 +19,24 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add_currency" author="Aleksej">
+       <addColumn tableName="rides">
+           <column name="r_currency" type="VARCHAR(50)" value="BYN"/>
+       </addColumn>
+    </changeSet>
+
+    <changeSet id="rides_by_month_setup" author="Aleksej">
+        <createTable tableName="rides_by_month">
+            <column name="rm_id" type="BIGINT" />
+            <column name="rm_driver_id" type="BIGINT" />
+            <column name="rm_year" type="INT" />
+            <column name="rm_month" type="INT" />
+            <column name="rm_count" type="INT" />
+            <column name="rm_currency" type="VARCHAR(50)" />
+            <column name="rm_sum" type="DECIMAL(10, 2)" />
+        </createTable>
+        
+        <createSequence sequenceName="sequence_id_auto_gen" incrementBy="100"/>
+    </changeSet>
+
 </databaseChangeLog>

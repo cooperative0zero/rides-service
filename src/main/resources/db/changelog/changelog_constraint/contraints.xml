@@ -14,4 +14,14 @@
         <addNotNullConstraint columnName="r_creation_date" tableName="rides"/>
     </changeSet>
 
+    <changeSet id="rm_constraints_setup" author="Aleksej">
+        <addPrimaryKey columnNames="rm_id" tableName="rides_by_month" constraintName="pk_rides_by_month"/>
+        <addNotNullConstraint columnName="rm_driver_id" tableName="rides_by_month"/>
+        <addNotNullConstraint columnName="rm_year" tableName="rides_by_month"/>
+        <addNotNullConstraint columnName="rm_month" tableName="rides_by_month"/>
+        <addNotNullConstraint columnName="rm_count" tableName="rides_by_month"/>
+        <addNotNullConstraint columnName="rm_currency" tableName="rides_by_month"/>
+        <addNotNullConstraint columnName="rm_sum" tableName="rides_by_month"/>
+    </changeSet>
+
 </databaseChangeLog>
